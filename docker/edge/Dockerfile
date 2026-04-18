@@ -6,7 +6,6 @@ WORKDIR /app
 # By building a dummy main.rs first, Docker can cache the layer containing all
 # compiled dependencies. Subsequent rebuilds only recompile your src/ changes.
 # See: https://www.youtube.com/watch?v=5Wfpzfniu4I
-COPY Cargo.lock ./
 COPY Cargo.toml ./
 RUN mkdir -p src \
     && echo 'fn main() {}' > src/main.rs \
@@ -20,5 +19,5 @@ RUN touch src/main.rs \
 
 # Final image — no Rust toolchain, no build artifacts, just the binary.
 FROM gcr.io/distroless/cc-debian12:nonroot AS runtime
-COPY --from=builder /app/target/release/sensor .
-CMD ["./sensor"]
+COPY --from=builder /app/target/release/edge .
+CMD ["./edge"]
