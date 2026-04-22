@@ -1,9 +1,20 @@
 [package]
 name = "edge"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"                  
 
-[dependencies]
+[[bin]]                            
+name = "edge"
+path = "src/main.rs"
+
+[dependencies]                      
+common = { path = "../common" }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+axum = "0.7"
+reqwest = { version = "0.11", features = ["json"] }
 
 # PERFORMANCE: `release` profile configured to increase execution performance.
 [profile.release]
