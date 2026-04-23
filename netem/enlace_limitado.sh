@@ -9,7 +9,7 @@ echo "================================================================"
 echo "   Interfaz: $INTERFACE"
 
 # Limpiar reglas existentes
-sudo tc qdisc del dev "$INTERFACE" root 2>/dev/null
+sudo tc qdisc del dev "$INTERFACE" root 2> /dev/null
 
 # Aplicar tbf (Token Bucket Filter) para limitar ancho de banda
 sudo tc qdisc add dev "$INTERFACE" root handle 1: tbf rate 512kbit burst 1600 latency 50ms

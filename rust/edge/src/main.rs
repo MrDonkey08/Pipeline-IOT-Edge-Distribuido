@@ -13,14 +13,10 @@
 //! ============================================================
 
 use axum::{
-    extract::State,
-    http::StatusCode,
-    response::IntoResponse,
-    routing::post,
-    Json,
-    Router,
+    extract::State, http::StatusCode, response::IntoResponse, routing::post,
+    Json, Router,
 };
-use common::{EdgeReport, SensorReading, current_timestamp_ms};
+use common::{current_timestamp_ms, EdgeReport, SensorReading};
 use serde_json;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -54,7 +50,9 @@ impl EdgeState {
             self.lost_messages += lost;
             tracing::warn!(
                 " Gap detectado: perdidos {} mensajes (seq {} -> {})",
-                lost, self.last_sequence, sequence
+                lost,
+                self.last_sequence,
+                sequence
             );
         }
         self.last_sequence = sequence;
@@ -107,19 +105,31 @@ async fn handle_sensor_data(
     println!("    latencia:     {}ms (desde generación)", latency_ms);
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    match state.http_client.post(&state.coordinator_url).json(&report).send().await {
+    match state
+        .http_client
+        .post(&state.coordinator_url)
+        .json(&report)
+        .send()
+        .await
+    {
         Ok(response) if response.status().is_success() => {
             println!(" REENVIADO AL COORDINATOR [{}]", state.coordinator_url);
             println!("   edge_id:      {}", state.edge_id);
             println!("   valor_reenviado: {:.1}°C", reading.value);
-            println!("   anomaly:      {}", if reading.value > 35.0 { " Si" } else { "No" });
+            println!(
+                "   anomaly:      {}",
+                if reading.value > 35.0 { " Si" } else { "No" }
+            );
             println!("   total_reenviados: {}", total_readings);
             println!("   status:       {}", response.status());
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
             (StatusCode::OK, "OK")
         }
         Ok(response) => {
-            println!(" [ERROR] Coordinator respondió con error: {}", response.status());
+            println!(
+                " [ERROR] Coordinator respondió con error: {}",
+                response.status()
+            );
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
             (StatusCode::INTERNAL_SERVER_ERROR, "Coordinator error")
         }
@@ -155,7 +165,8 @@ async fn main() -> anyhow::Result<()> {
         .parse()
         .unwrap_or(DEFAULT_HTTP_PORT);
 
-    let coordinator_url = format!("http://{}:{}/report", coordinator_host, coordinator_port);
+    let coordinator_url =
+        format!("http://{}:{}/report", coordinator_host, coordinator_port);
 
     let http_client = reqwest::Client::builder()
         .timeout(Duration::from_secs(5))
@@ -176,14 +187,18 @@ async fn main() -> anyhow::Result<()> {
     println!("  Endpoint: POST /data                                    ");
     println!("  Reenvía a: {:<37}", state.coordinator_url);
     println!("══════════════════════════════════════════════════════════");
-    println!("\n Esperando datos de sensores en http://localhost:{}/data\n", http_port);
+    println!(
+        "\n Esperando datos de sensores en http://localhost:{}/data\n",
+        http_port
+    );
 
     let app = Router::new()
         .route("/data", post(handle_sensor_data))
         .route("/health", axum::routing::get(health_check))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", http_port)).await?;
+    let listener =
+        tokio::net::TcpListener::bind(format!("0.0.0.0:{}", http_port)).await?;
     axum::serve(listener, app).await?;
 
     Ok(())

@@ -8,7 +8,7 @@ echo " [BASELINE] Limpiando reglas tc en interfaz: $INTERFACE"
 echo "================================================================"
 
 # Eliminar todas las reglas qdisc
-sudo tc qdisc del dev "$INTERFACE" root 2>/dev/null && echo " Reglas eliminadas" || echo " No habia reglas activas"
+sudo tc qdisc del dev "$INTERFACE" root 2> /dev/null && echo " Reglas eliminadas" || echo " No habia reglas activas"
 
 # Verificar estado
 echo ""

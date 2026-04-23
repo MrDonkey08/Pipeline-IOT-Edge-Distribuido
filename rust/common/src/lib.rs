@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 // Funcion utilitaria para timestamp en milisegundos
@@ -8,7 +8,6 @@ pub fn current_timestamp_ms() -> u64 {
         .unwrap()
         .as_millis() as u64
 }
-
 
 // estructura que el edge recibe del sensor (HTTP POST /data)
 
@@ -20,7 +19,6 @@ pub struct SensorReading {
     pub unit: String,
     pub sequence: u64,
 }
-
 
 // estructura que el edge envia al cordinador (HTTP POST /report)
 
@@ -34,7 +32,6 @@ pub struct EdgeReport {
     pub latency_ms: u64,
     pub readings_received: u64,
 }
-
 
 // estructura para heartbeat (opcional, para tolerancia a fallos)
 

@@ -10,24 +10,24 @@ echo ""
 INTERFACES=$(ip -o link show | awk -F': ' '{print $2}' | grep -v "lo")
 
 for iface in $INTERFACES; do
-    # Verificar si la interfaz tiene IP asignada
-    IP_ADDR=$(ip -4 addr show dev "$iface" 2>/dev/null | grep inet | awk '{print $2}' | head -1)
-    
-    if [ -n "$IP_ADDR" ]; then
-        echo "🔹 Interfaz: $iface ($IP_ADDR)"
-    else
-        echo "🔹 Interfaz: $iface (sin IP)"
-    fi
-    
-    QDISC=$(sudo tc qdisc show dev "$iface" 2>/dev/null)
-    if [ -n "$QDISC" ]; then
-        echo "$QDISC" | while read line; do
-            echo "   $line"
-        done
-    else
-        echo "    (sin reglas tc activas - red limpia)"
-    fi
-    echo ""
+	# Verificar si la interfaz tiene IP asignada
+	IP_ADDR=$(ip -4 addr show dev "$iface" 2> /dev/null | grep inet | awk '{print $2}' | head -1)
+
+	if [ -n "$IP_ADDR" ]; then
+		echo "🔹 Interfaz: $iface ($IP_ADDR)"
+	else
+		echo "🔹 Interfaz: $iface (sin IP)"
+	fi
+
+	QDISC=$(sudo tc qdisc show dev "$iface" 2> /dev/null)
+	if [ -n "$QDISC" ]; then
+		echo "$QDISC" | while read line; do
+			echo "   $line"
+		done
+	else
+		echo "    (sin reglas tc activas - red limpia)"
+	fi
+	echo ""
 done
 
 echo "================================================================"

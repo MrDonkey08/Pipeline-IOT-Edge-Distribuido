@@ -9,7 +9,7 @@ echo "================================================================"
 echo "   Interfaz: $INTERFACE"
 
 # Limpiar reglas existentes
-sudo tc qdisc del dev "$INTERFACE" root 2>/dev/null
+sudo tc qdisc del dev "$INTERFACE" root 2> /dev/null
 
 # Aplicar netem con pérdida de paquetes
 sudo tc qdisc add dev "$INTERFACE" root netem loss 8%
