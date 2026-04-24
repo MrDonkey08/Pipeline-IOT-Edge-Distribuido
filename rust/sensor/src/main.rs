@@ -1,31 +1,58 @@
+use common::{SensorReading, current_timestamp_ms};
 use rand::Rng;
-use serde::Serialize;
-use std::{thread, time::Duration};
-
-#[derive(Serialize)]
-struct SensorReading {
-    sensor_id: String,
-    value: f32,
-}
+use std::time::Duration;
+use tokio::time;
+use tracing::{info, error};
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::fmt()
+        .with_env_filter("info")
+        .with_target(false)
+        .init();
+
+    let edge_host = std::env::var("EDGE_HOST").unwrap_or_else(|_| "10.10.10.2".to_string());
+    let edge_port = std::env::var("EDGE_PORT").unwrap_or_else(|_| "3001".to_string());
+    let sensor_id = std::env::var("SENSOR_ID").unwrap_or_else(|_| "sensor1".to_string());
+    let interval_ms: u64 = std::env::var("INTERVAL_MS")
+        .unwrap_or_else(|_| "1000".to_string())
+        .parse()
+        .unwrap_or(1000);
+
+    let edge_url = format!("http://{}:{}/data", edge_host, edge_port);
+    let client = reqwest::Client::new();
+    let mut rng = rand::thread_rng();
+    let mut sequence = 0u64;
+
+    info!("Sensor {} iniciado, enviando a {}", sensor_id, edge_url);
+
+    let mut interval = time::interval(Duration::from_millis(interval_ms));
+
     loop {
-        let value: f32 = rand::thread_rng().gen_range(20.0..30.0);
+        interval.tick().await;
+
+        let value = 15.0 + rng.gen_range(0.0..25.0);
 
         let reading = SensorReading {
-            sensor_id: "sensor-1".to_string(),
+            sensor_id: sensor_id.clone(),
+            timestamp_ms: current_timestamp_ms(),
             value,
+            unit: "celsius".to_string(),
+            sequence,
         };
 
-        println!("Sensor enviando: {:?}", value);
+        sequence += 1;
 
-        let _ = reqwest::Client::new()
-            .post("http://edge:3001/data")
-            .json(&reading)
-            .send()
-            .await;
-
-        thread::sleep(Duration::from_secs(2));
+        match client.post(&edge_url).json(&reading).send().await {
+            Ok(response) if response.status().is_success() => {
+                info!(" Enviado: temp={:.1}°C, seq={}", value, reading.sequence);
+            }
+            Ok(response) => {
+                error!(" Error HTTP: {}", response.status());
+            }
+            Err(e) => {
+                error!(" Error de conexión: {}", e);
+            }
+        }
     }
 }
