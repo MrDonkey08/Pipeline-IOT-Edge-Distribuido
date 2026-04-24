@@ -1,33 +1,44 @@
 [package]
 name = "sensor"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[[bin]]
+name = "sensor"
+path = "src/main.rs"
 
 [dependencies]
-reqwest = { version = "0.11", default-features = false, features = [
-  "json",
-  "rustls-tls",
-] }
+common = { path = "../common" }
+reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 rand = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+opt-level = 3
+debug = false
+strip = true
+lto = "fat"
+panic = "abort"
 
 # PERFORMANCE: `release` profile configured to increase execution performance.
-[profile.release]
-opt-level = 3            # Optimization level.
-debug = false            # Include debug info.
-split-debuginfo = "off"  # Debug info splitting behavior.
-strip = true             # Removes symbols or debuginfo.
-debug-assertions = false # Enables debug assertions.
-overflow-checks = false  # Enables runtime integer overflow checks.
-lto = "fat"              # Sets link-time optimization.
-panic = "abort"          # The panic strategy.
-incremental = false      # Incremental compilation.
+##[profile.release]
+##opt-level = 3            # Optimization level.
+##debug = false            # Include debug info.
+##split-debuginfo = "off"  # Debug info splitting behavior.
+##strip = true             # Removes symbols or debuginfo.
+##debug-assertions = false # Enables debug assertions.
+##overflow-checks = false  # Enables runtime integer overflow checks.
+##lto = "fat"              # Sets link-time optimization.
+##panic = "abort"          # The panic strategy.
+##incremental = false      # Incremental compilation.
 # codegen-units = 1        # Number of code generation units.
 
-[profile.release.build-override]
-opt-level = 3     # Optimize build scripts and proc-macros equally.
-codegen-units = 1 # Consistent codegen units for build scripts.
+##[profile.release.build-override]
+##opt-level = 3     # Optimize build scripts and proc-macros equally.
+##codegen-units = 1 # Consistent codegen units for build scripts.
 
 # PERFORMANCE: Uncomment the following lines to further increase performance
 # by compiling the executable for your specific x86_64 CPU architecture.
