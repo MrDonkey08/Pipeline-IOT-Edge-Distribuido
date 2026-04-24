@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  coordinator:
+    build:
+      context: ..
+      dockerfile: docker/coordinator/Dockerfile
+    container_name: coordinator
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - LISTEN_PORT=8002
+      - HTTP_PORT=8080
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  edge:
+    build:
+      context: ..
+      dockerfile: docker/edge/Dockerfile
+    container_name: edge-${EDGE_NUM:-1}
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - coordinator
+    environment:
+      - COORDINATOR_HOST=10.10.10.1
+      - COORDINATOR_PORT=8002
+      - EDGE_ID=edge-${EDGE_NUM:-1}
+      - HTTP_PORT=3001
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  sensor:
+    build:
+      context: ..
+      dockerfile: docker/sensor/Dockerfile
+    container_name: sensor-${SENSOR_NUM:-1}
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - edge
+    environment:
+      - EDGE_HOST=10.10.10.${EDGE_IP_LAST_OCTET:-2}
+      - EDGE_PORT=3001
+      - SENSOR_ID=sensor-${SENSOR_NUM:-1}
+      - INTERVAL_MS=1000
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
