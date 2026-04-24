@@ -42,3 +42,13 @@ pub struct Heartbeat {
     pub timestamp_ms: u64,
     pub uptime_secs: u64,
 }
+
+//nueva seccion de codigo CordStatus
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CoordStatus {
+    pub active_edges: Vec<String>,
+    pub total_readings: u64,
+    pub anomalies_last_min: u32,
+    pub uptime_s: u64,
+    pub throughput_msg_per_sec: f64,
+}
