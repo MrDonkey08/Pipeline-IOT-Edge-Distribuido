@@ -1,23 +1,21 @@
-FROM rust:1-slim-bookworm AS builder
+FROM rust:1.85-slim-bookworm AS builder
 
 WORKDIR /app
+COPY rust /app/rust
+COPY rust/Cargo.toml /app/Cargo.toml
 
-# PERFORMANCE: Cache dependency compilation separately from application source.
-# By building a dummy main.rs first, Docker can cache the layer containing all
-# compiled dependencies. Subsequent rebuilds only recompile your src/ changes.
-# See: https://www.youtube.com/watch?v=5Wfpzfniu4I
-COPY Cargo.toml ./
-RUN mkdir -p src \
-    && echo 'fn main() {}' > src/main.rs \
-    && cargo build --release
+RUN cargo build --release --bin sensor
 
-# Overwrite application source and touch artifacts to bust Cargo's mtime cache,
-# forcing a relink against the real entry point instead of the dummy one.
-COPY ./src ./src
-RUN touch src/main.rs \
-    && cargo build --release
+FROM debian:bookworm-slim
 
-# Final image — no Rust toolchain, no build artifacts, just the binary.
-FROM gcr.io/distroless/cc-debian12:nonroot AS runtime
-COPY --from=builder /app/target/release/sensor .
-CMD ["./sensor"]
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /app/target/release/sensor /app/sensor
+
+ENV EDGE_HOST=10.10.10.2
+ENV EDGE_PORT=3001
+ENV SENSOR_ID=sensor1
+ENV INTERVAL_MS=1000
+
+ENTRYPOINT ["/app/sensor"]
