@@ -1,0 +1,14 @@
+[workspace]
+members = ["common", "sensor", "edge", "coordinator"]
+resolver = "2"
+
+[workspace.dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rand = "0.8"
+axum = "0.7"
+reqwest = { version = "0.11", features = ["json"] }
