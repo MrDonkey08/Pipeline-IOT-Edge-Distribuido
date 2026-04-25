@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 use tokio::time;
-use tracing::{info, warn, error};
+use tracing::{info, warn};
 
 const HEARTBEAT_TIMEOUT_SECS: u64 = 10;
 
