@@ -71,7 +71,7 @@ impl CoordinatorState {
         let is_new = !self.edges.contains_key(&edge_id);
         let edge = self
             .edges
-            .entry(edge_id)
+            .entry(edge_id.clone())
             .or_insert_with(|| EdgeInfo::new(timestamp));
         edge.last_heartbeat = timestamp;
         if is_new {
