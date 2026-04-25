@@ -1,3 +1,4 @@
+
 use axum::{
     extract::State,
     http::StatusCode,
@@ -22,7 +23,7 @@ struct EdgeInfo {
     anomalies_count: u32,
     avg_latency_sum: u64,
     avg_latency_count: u64,
-    first_seen: SystemTime,
+    _first_seen: SystemTime,
 }
 
 impl EdgeInfo {
@@ -33,11 +34,11 @@ impl EdgeInfo {
             anomalies_count: 0,
             avg_latency_sum: 0,
             avg_latency_count: 0,
-            first_seen: SystemTime::now(),
+            _first_seen: SystemTime::now(),
         }
     }
 
-    fn avg_latency_ms(&self) -> f64 {
+    fn _avg_latency_ms(&self) -> f64 {
         if self.avg_latency_count == 0 {
             0.0
         } else {
@@ -148,7 +149,7 @@ async fn handle_report(
     let mut state = app.state.lock().unwrap();
     state.record_report(report.edge_id.clone(), report.clone());
     info!(
-        " Reporte de {}: avg={:.1}°C, anomaly={}",
+        " Reporte de {}: avg={:.1}C, anomaly={}",
         report.edge_id, report.window_avg, report.anomaly_detected
     );
     StatusCode::OK
@@ -185,7 +186,7 @@ async fn dead_edge_detection(app: AppState) {
 
         for edge in &dead {
             if !last_dead.contains(edge) {
-                warn!(" EDGE CAÍDO: {}", edge);
+                warn!(" EDGE CAIDO: {}", edge);
             }
         }
         for edge in &last_dead {
@@ -218,17 +219,31 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Coordinator iniciado en puerto {}", listen_port);
 
-    let app = Router::new()
+    // Servidor para reportes (puerto 8002)
+    let app_reports = Router::new()
         .route("/report", post(handle_report))
         .route("/heartbeat", post(handle_heartbeat))
+        .with_state(app_state.clone());
+
+    // Servidor para métricas (puerto HTTP_PORT)
+    let app_metrics = Router::new()
         .route("/metrics", get(handle_metrics))
         .route("/health", get(health_check))
         .with_state(app_state.clone());
 
     tokio::spawn(dead_edge_detection(app_state));
 
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", listen_port)).await?;
-    axum::serve(listener, app).await?;
+    // Iniciar ambos servidores concurrentemente
+    let reports_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", listen_port)).await?;
+    let metrics_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", http_port)).await?;
+
+    info!("Servidor de métricas iniciado en puerto {}", http_port);
+
+    tokio::select! {
+        result = axum::serve(reports_listener, app_reports) => result?,
+        result = axum::serve(metrics_listener, app_metrics) => result?,
+    }
 
     Ok(())
 }
+EOF
