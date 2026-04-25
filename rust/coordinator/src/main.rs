@@ -1,3 +1,4 @@
+cat > ~/Pipeline-IOT-Edge-Distribuido/rust/coordinator/src/main.rs << 'EOF'
 use axum::{
     extract::State,
     http::StatusCode,
@@ -34,14 +35,6 @@ impl EdgeInfo {
             avg_latency_sum: 0,
             avg_latency_count: 0,
             _first_seen: SystemTime::now(),
-        }
-    }
-
-    fn _avg_latency_ms(&self) -> f64 {
-        if self.avg_latency_count == 0 {
-            0.0
-        } else {
-            self.avg_latency_sum as f64 / self.avg_latency_count as f64
         }
     }
 }
@@ -218,13 +211,11 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Coordinator iniciado en puerto {}", listen_port);
 
-    // Servidor para reportes (puerto 8002)
     let app_reports = Router::new()
         .route("/report", post(handle_report))
         .route("/heartbeat", post(handle_heartbeat))
         .with_state(app_state.clone());
 
-    // Servidor para métricas (puerto HTTP_PORT)
     let app_metrics = Router::new()
         .route("/metrics", get(handle_metrics))
         .route("/health", get(health_check))
@@ -232,7 +223,6 @@ async fn main() -> anyhow::Result<()> {
 
     tokio::spawn(dead_edge_detection(app_state));
 
-    // Iniciar ambos servidores concurrentemente
     let reports_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", listen_port)).await?;
     let metrics_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", http_port)).await?;
 
@@ -243,8 +233,6 @@ async fn main() -> anyhow::Result<()> {
         result = axum::serve(metrics_listener, app_metrics) => result?,
     }
 
-    Ok(())
-}
     Ok(())
 }
 EOF
