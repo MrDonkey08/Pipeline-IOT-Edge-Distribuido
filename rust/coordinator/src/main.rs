@@ -1,4 +1,3 @@
-
 use axum::{
     extract::State,
     http::StatusCode,
@@ -244,6 +243,8 @@ async fn main() -> anyhow::Result<()> {
         result = axum::serve(metrics_listener, app_metrics) => result?,
     }
 
+    Ok(())
+}
     Ok(())
 }
 EOF
