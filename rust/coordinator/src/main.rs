@@ -1,4 +1,3 @@
-cat > ~/Pipeline-IOT-Edge-Distribuido/rust/coordinator/src/main.rs << 'EOF'
 use axum::{
     extract::State,
     http::StatusCode,
