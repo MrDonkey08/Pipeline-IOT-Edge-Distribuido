@@ -16,6 +16,6 @@ COPY --from=builder /app/target/release/coordinator /app/coordinator
 ENV LISTEN_PORT=8002
 ENV HTTP_PORT=8080
 
-EXPOSE 8080
+EXPOSE 8002 8080
 
 ENTRYPOINT ["/app/coordinator"]
