@@ -13,9 +13,9 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 WORKDIR /app
 COPY --from=builder /app/target/release/sensor /app/sensor
 
-ENV EDGE_HOST=10.10.10.2
+ENV EDGE_HOST=10.5.5.1
 ENV EDGE_PORT=3001
-ENV SENSOR_ID=sensor1
+ENV SENSOR_ID=sensor
 ENV INTERVAL_MS=1000
 
 ENTRYPOINT ["/app/sensor"]
