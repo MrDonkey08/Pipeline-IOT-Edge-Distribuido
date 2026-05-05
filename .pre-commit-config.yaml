@@ -69,34 +69,10 @@ repos:
   # --- Rust -------------------------------------------------------------------
   - repo: local
     hooks:
-      - id: rustfmt-common
-        name: rustfmt (common)
+      - id: rustfmt
+        name: rustfmt
         language: system
-        entry: bash -c 'cd rust/common && cargo fmt --all --'
+        entry: bash -c 'cd rust && cargo fmt --all --'
         types: [rust]
         pass_filenames: false
-        files: ^rust/common/
-
-      - id: rustfmt-coordinator
-        name: rustfmt (coordinator)
-        language: system
-        entry: bash -c 'cd rust/coordinator && cargo fmt --all --'
-        types: [rust]
-        pass_filenames: false
-        files: ^rust/coordinator/
-
-      - id: rustfmt-edge
-        name: rustfmt (edge)
-        language: system
-        entry: bash -c 'cd rust/edge && cargo fmt --all --'
-        types: [rust]
-        pass_filenames: false
-        files: ^rust/edge/
-
-      - id: rustfmt-sensor
-        name: rustfmt (sensor)
-        language: system
-        entry: bash -c 'cd rust/sensor && cargo fmt --all --'
-        types: [rust]
-        pass_filenames: false
-        files: ^rust/sensor/
+        files: ^rust/

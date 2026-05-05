@@ -1,43 +1,18 @@
 [package]
 name = "edge"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [[bin]]
 name = "edge"
 path = "src/main.rs"
 
 [dependencies]
-common = { path = "../common" }
-serde_json = "1.0"
-tokio = { version = "1.35", features = ["full"] }
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-axum = "0.7"
-reqwest = { version = "0.11", features = ["json"] }
-
-# PERFORMANCE: `release` profile configured to increase execution performance.
-[profile.release]
-opt-level = 3            # Optimization level.
-debug = false            # Include debug info.
-split-debuginfo = "off"  # Debug info splitting behavior.
-strip = true             # Removes symbols or debuginfo.
-debug-assertions = false # Enables debug assertions.
-overflow-checks = false  # Enables runtime integer overflow checks.
-lto = "fat"              # Sets link-time optimization.
-panic = "abort"          # The panic strategy.
-incremental = false      # Incremental compilation.
-# codegen-units = 1        # Number of code generation units.
-
-[profile.release.build-override]
-opt-level = 3     # Optimize build scripts and proc-macros equally.
-codegen-units = 1 # Consistent codegen units for build scripts.
-
-# PERFORMANCE: Uncomment the following lines to further increase performance
-# by compiling the executable for your specific x86_64 CPU architecture.
-#
-# WARNING: This reduces executable portability and therefore Docker image
-# portability.
-#
-# [target.'cfg(target_arch = "x86_64")']
-# rustflags = ["-C", "target-cpu=native"]
+anyhow = { workspace = true }
+axum = { workspace = true }
+common = { workspace = true }
+reqwest = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
