@@ -13,10 +13,10 @@
 //! ============================================================
 
 use axum::{
-    extract::State, http::StatusCode, response::IntoResponse, routing::post,
-    Json, Router,
+    Json, Router, extract::State, http::StatusCode, response::IntoResponse,
+    routing::post,
 };
-use common::{current_timestamp_ms, EdgeReport, SensorReading};
+use common::{EdgeReport, SensorReading, current_timestamp_ms};
 use serde_json;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -122,7 +122,9 @@ async fn handle_sensor_data(
             );
             println!("   total_reenviados: {}", total_readings);
             println!("   status:       {}", response.status());
-            println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+            println!(
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            );
             (StatusCode::OK, "OK")
         }
         Ok(response) => {
@@ -130,12 +132,16 @@ async fn handle_sensor_data(
                 " [ERROR] Coordinator respondió con error: {}",
                 response.status()
             );
-            println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+            println!(
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            );
             (StatusCode::INTERNAL_SERVER_ERROR, "Coordinator error")
         }
         Err(e) => {
             println!(" [ERROR] No se pudo enviar al coordinator: {}", e);
-            println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+            println!(
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            );
             (StatusCode::INTERNAL_SERVER_ERROR, "Connection error")
         }
     }

@@ -2,7 +2,7 @@ use common::{SensorReading, current_timestamp_ms};
 use rand::Rng;
 use std::time::Duration;
 use tokio::time;
-use tracing::{info, error};
+use tracing::{error, info};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -11,9 +11,12 @@ async fn main() -> anyhow::Result<()> {
         .with_target(false)
         .init();
 
-    let edge_host = std::env::var("EDGE_HOST").unwrap_or_else(|_| "10.10.10.2".to_string());
-    let edge_port = std::env::var("EDGE_PORT").unwrap_or_else(|_| "3001".to_string());
-    let sensor_id = std::env::var("SENSOR_ID").unwrap_or_else(|_| "sensor1".to_string());
+    let edge_host =
+        std::env::var("EDGE_HOST").unwrap_or_else(|_| "10.10.10.2".to_string());
+    let edge_port =
+        std::env::var("EDGE_PORT").unwrap_or_else(|_| "3001".to_string());
+    let sensor_id =
+        std::env::var("SENSOR_ID").unwrap_or_else(|_| "sensor1".to_string());
     let interval_ms: u64 = std::env::var("INTERVAL_MS")
         .unwrap_or_else(|_| "1000".to_string())
         .parse()
@@ -45,7 +48,10 @@ async fn main() -> anyhow::Result<()> {
 
         match client.post(&edge_url).json(&reading).send().await {
             Ok(response) if response.status().is_success() => {
-                info!(" Enviado: temp={:.1}°C, seq={}", value, reading.sequence);
+                info!(
+                    " Enviado: temp={:.1}°C, seq={}",
+                    value, reading.sequence
+                );
             }
             Ok(response) => {
                 error!(" Error HTTP: {}", response.status());

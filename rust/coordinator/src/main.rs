@@ -1,10 +1,9 @@
 use axum::{
+    Json, Router,
     extract::State,
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
-    Json,
-    Router,
 };
 use common::{CoordStatus, EdgeReport, Heartbeat, current_timestamp_ms};
 use std::collections::HashMap;
@@ -99,7 +98,9 @@ impl CoordinatorState {
     fn get_active_edges(&self, now_ms: u64) -> Vec<String> {
         self.edges
             .iter()
-            .filter(|(_, info)| now_ms - info.last_heartbeat < HEARTBEAT_TIMEOUT_SECS * 1000)
+            .filter(|(_, info)| {
+                now_ms - info.last_heartbeat < HEARTBEAT_TIMEOUT_SECS * 1000
+            })
             .map(|(id, _)| id.clone())
             .collect()
     }
@@ -107,7 +108,9 @@ impl CoordinatorState {
     fn get_dead_edges(&self, now_ms: u64) -> Vec<String> {
         self.edges
             .iter()
-            .filter(|(_, info)| now_ms - info.last_heartbeat >= HEARTBEAT_TIMEOUT_SECS * 1000)
+            .filter(|(_, info)| {
+                now_ms - info.last_heartbeat >= HEARTBEAT_TIMEOUT_SECS * 1000
+            })
             .map(|(id, _)| id.clone())
             .collect()
     }
@@ -122,7 +125,11 @@ impl CoordinatorState {
             active_edges: self.get_active_edges(now),
             total_readings: self.total_readings,
             anomalies_last_min: self.anomalies_last_min,
-            uptime_s: self.start_time.elapsed().unwrap_or(Duration::ZERO).as_secs(),
+            uptime_s: self
+                .start_time
+                .elapsed()
+                .unwrap_or(Duration::ZERO)
+                .as_secs(),
             throughput_msg_per_sec: self.throughput_msg_per_sec(),
         }
     }
@@ -206,7 +213,9 @@ async fn main() -> anyhow::Result<()> {
         .unwrap_or(8080);
 
     let state = Arc::new(Mutex::new(CoordinatorState::new()));
-    let app_state = AppState { state: state.clone() };
+    let app_state = AppState {
+        state: state.clone(),
+    };
 
     info!("Coordinator iniciado en puerto {}", listen_port);
 
@@ -222,8 +231,11 @@ async fn main() -> anyhow::Result<()> {
 
     tokio::spawn(dead_edge_detection(app_state));
 
-    let reports_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", listen_port)).await?;
-    let metrics_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", http_port)).await?;
+    let reports_listener =
+        tokio::net::TcpListener::bind(format!("0.0.0.0:{}", listen_port))
+            .await?;
+    let metrics_listener =
+        tokio::net::TcpListener::bind(format!("0.0.0.0:{}", http_port)).await?;
 
     info!("Servidor de métricas iniciado en puerto {}", http_port);
 
