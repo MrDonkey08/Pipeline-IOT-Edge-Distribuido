@@ -1,0 +1,45 @@
+services:
+  coordinator:
+    image: coordinator:latest
+    build:
+      context: ..
+      dockerfile: docker/coordinator/Dockerfile
+    container_name: coordinator
+    network_mode: host
+    restart: unless-stopped
+    expose:
+      - "8002"
+      - "8080"
+    environment:
+      - LISTEN_PORT=8002
+      - HTTP_PORT=8080
+
+  edge:
+    image: edge:latest
+    build:
+      context: ..
+      dockerfile: docker/edge/Dockerfile
+    container_name: edge-${EDGE_NUM:-1}
+    network_mode: host
+    restart: unless-stopped
+    expose:
+      - "3001"
+    environment:
+      - COORDINATOR_HOST=localhost
+      - COORDINATOR_PORT=8002
+      - EDGE_ID=edge-${EDGE_NUM:-1}
+      - HTTP_PORT=3001
+
+  sensor:
+    image: sensor:latest
+    build:
+      context: ..
+      dockerfile: docker/sensor/Dockerfile
+    container_name: sensor-${SENSOR_NUM:-1}
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - EDGE_HOST=localhost
+      - EDGE_PORT=3001
+      - SENSOR_ID=sensor-${SENSOR_NUM:-1}
+      - INTERVAL_MS=1000
